@@ -7,8 +7,6 @@ import { ensureSourceState } from "./source-config"
 import { normalizeSourceItems } from "./source-normalize"
 import { readSourceResponse } from "./source-reader"
 
-const SnapshotLimit = 100
-
 export async function pruneSource(sourceId: SourceID) {
   const state = await ensureSourceState(sourceId)
   const table = await getSourceItemTable()
@@ -22,7 +20,7 @@ export async function pruneSource(sourceId: SourceID) {
 
 export async function refreshSource(sourceId: SourceID): Promise<SourceResponse> {
   const fetchedAt = Date.now()
-  await ensureSourceState(sourceId)
+  const state = await ensureSourceState(sourceId)
   const stateTable = await getSourceStateTable()
   if (stateTable) await stateTable.touchRefresh(sourceId, fetchedAt)
 
@@ -32,18 +30,18 @@ export async function refreshSource(sourceId: SourceID): Promise<SourceResponse>
     const sourceItemTable = await getSourceItemTable()
     if (sourceItemTable) await sourceItemTable.upsert(sourceId, normalized)
 
-    const cacheTable = await getCacheTable()
-    const snapshot = normalized.slice(0, SnapshotLimit).map(item => item.item)
-    if (cacheTable && snapshot.length) await cacheTable.set(sourceId, snapshot)
-
     await pruneSource(sourceId)
     if (stateTable) await stateTable.touchSuccess(sourceId, fetchedAt)
+    const response = await readSourceResponse(sourceId)
 
-    return (await readSourceResponse(sourceId)) ?? {
+    const cacheTable = await getCacheTable()
+    if (cacheTable && response?.items.length) await cacheTable.set(sourceId, response.items)
+
+    return response ?? {
       status: "success",
       id: sourceId,
       updatedTime: fetchedAt,
-      items: snapshot,
+      items: [],
     }
   } catch (error) {
     if (stateTable) await stateTable.touchError(sourceId, error instanceof Error ? error.message : String(error))

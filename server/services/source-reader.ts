@@ -3,12 +3,11 @@ import { getCacheTable } from "../database/cache"
 import { getSourceItemTable } from "../database/source-item"
 import { ensureSourceState } from "./source-config"
 
-const DefaultDisplayLimit = 100
-
 export async function readSourceResponse(sourceId: SourceID): Promise<SourceResponse | undefined> {
   const sourceItemTable = await getSourceItemTable()
   const state = await ensureSourceState(sourceId)
-  const items = sourceItemTable ? await sourceItemTable.list(sourceId, DefaultDisplayLimit) : []
+  const minSortTime = Date.now() - state.retentionHours * 60 * 60 * 1000
+  const items = sourceItemTable ? await sourceItemTable.listRetained(sourceId, minSortTime, state.minKeepCount) : []
   if (items.length) {
     return {
       status: "success",

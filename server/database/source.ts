@@ -2,6 +2,7 @@ import process from "node:process"
 import type { NewsItem, SourceID } from "@shared/types"
 import type { Database } from "db0"
 import type { PersistedSourceItem, SourceConfigValue, SourceState, SourceStateRow } from "../types"
+import { resolveSourceDisplayLimit } from "../utils/source-retention"
 
 interface SourceItemRow {
   source_id: SourceID
@@ -66,6 +67,26 @@ export class SourceItemTable {
       fetchedAt: row.fetched_at,
       item: JSON.parse(row.item_json) as NewsItem,
     }))
+  }
+
+  async listRetained(sourceId: SourceID, minSortTime: number, keepCount: number): Promise<PersistedSourceItem[]> {
+    const total = await this.count(sourceId)
+    if (!total) return []
+
+    const limit = await resolveSourceDisplayLimit({
+      total,
+      keepCount,
+      countWithinWindow: async () => {
+        const row = await this.db.prepare(`
+          SELECT COUNT(*) as total
+          FROM source_item
+          WHERE source_id = ? AND sort_time >= ?
+        `).get(sourceId, minSortTime) as { total?: number } | undefined
+        return row?.total ?? 0
+      },
+    })
+
+    return this.list(sourceId, limit)
   }
 
   async count(sourceId: SourceID) {
