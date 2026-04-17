@@ -51,6 +51,7 @@ export async function ensureSourceState(sourceId: SourceID): Promise<SourceState
   if (!table) {
     return {
       sourceId,
+      consecutiveFailures: 0,
       ...defaults,
     }
   }
@@ -60,20 +61,27 @@ export async function ensureSourceState(sourceId: SourceID): Promise<SourceState
     await table.upsert(sourceId, defaults)
     return {
       sourceId,
+      consecutiveFailures: 0,
       ...defaults,
     }
   }
 
   if (
-    current.refreshEnabled !== defaults.refreshEnabled
-    || current.refreshInterval !== defaults.refreshInterval
+    current.refreshInterval !== defaults.refreshInterval
     || current.retentionHours !== defaults.retentionHours
     || current.minKeepCount !== defaults.minKeepCount
   ) {
-    await table.upsert(sourceId, defaults)
+    await table.upsert(sourceId, {
+      refreshEnabled: current.refreshEnabled,
+      refreshInterval: defaults.refreshInterval,
+      retentionHours: defaults.retentionHours,
+      minKeepCount: defaults.minKeepCount,
+    })
     return {
       ...current,
-      ...defaults,
+      refreshInterval: defaults.refreshInterval,
+      retentionHours: defaults.retentionHours,
+      minKeepCount: defaults.minKeepCount,
     }
   }
 

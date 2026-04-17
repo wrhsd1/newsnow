@@ -9,6 +9,7 @@ export interface SourceConfigValue {
 
 export interface SourceState extends SourceConfigValue {
   sourceId: SourceID
+  consecutiveFailures: number
   lastRefreshAt?: number
   lastSuccessAt?: number
   lastCleanupAt?: number
@@ -21,6 +22,7 @@ export interface SourceStateRow {
   refresh_interval: number
   retention_hours: number
   min_keep_count: number
+  consecutive_failures?: number
   last_refresh_at?: number
   last_success_at?: number
   last_cleanup_at?: number

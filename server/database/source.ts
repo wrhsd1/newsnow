@@ -113,19 +113,25 @@ export class SourceStateTable {
         refresh_interval INTEGER NOT NULL,
         retention_hours INTEGER NOT NULL,
         min_keep_count INTEGER NOT NULL,
+        consecutive_failures INTEGER NOT NULL DEFAULT 0,
         last_refresh_at INTEGER,
         last_success_at INTEGER,
         last_cleanup_at INTEGER,
         last_error TEXT
       );
     `).run()
+    const columns = await this.db.prepare(`PRAGMA table_info(source_state)`).all() as any
+    const columnRows = (columns.results ?? columns) as Array<{ name: string }>
+    if (!columnRows.some(column => column.name === "consecutive_failures")) {
+      await this.db.prepare(`ALTER TABLE source_state ADD COLUMN consecutive_failures INTEGER NOT NULL DEFAULT 0`).run()
+    }
     logger.success("init source_state table")
   }
 
   async get(sourceId: SourceID): Promise<SourceState | undefined> {
     const row = await this.db.prepare(`
       SELECT source_id, refresh_enabled, refresh_interval, retention_hours, min_keep_count,
-             last_refresh_at, last_success_at, last_cleanup_at, last_error
+             consecutive_failures, last_refresh_at, last_success_at, last_cleanup_at, last_error
       FROM source_state
       WHERE source_id = ?
     `).get(sourceId) as SourceStateRow | undefined
@@ -135,7 +141,7 @@ export class SourceStateTable {
   async list(): Promise<SourceState[]> {
     const res = await this.db.prepare(`
       SELECT source_id, refresh_enabled, refresh_interval, retention_hours, min_keep_count,
-             last_refresh_at, last_success_at, last_cleanup_at, last_error
+             consecutive_failures, last_refresh_at, last_success_at, last_cleanup_at, last_error
       FROM source_state
     `).all() as any
     const rows = (res.results ?? res) as SourceStateRow[]
@@ -144,8 +150,8 @@ export class SourceStateTable {
 
   async upsert(sourceId: SourceID, config: SourceConfigValue) {
     await this.db.prepare(`
-      INSERT INTO source_state (source_id, refresh_enabled, refresh_interval, retention_hours, min_keep_count)
-      VALUES (?, ?, ?, ?, ?)
+      INSERT INTO source_state (source_id, refresh_enabled, refresh_interval, retention_hours, min_keep_count, consecutive_failures)
+      VALUES (?, ?, ?, ?, ?, 0)
       ON CONFLICT(source_id) DO UPDATE SET
         refresh_enabled = excluded.refresh_enabled,
         refresh_interval = excluded.refresh_interval,
@@ -159,7 +165,7 @@ export class SourceStateTable {
   }
 
   async touchSuccess(sourceId: SourceID, lastSuccessAt: number) {
-    await this.db.prepare(`UPDATE source_state SET last_success_at = ?, last_error = NULL WHERE source_id = ?`).run(lastSuccessAt, sourceId)
+    await this.db.prepare(`UPDATE source_state SET last_success_at = ?, consecutive_failures = 0, last_error = NULL WHERE source_id = ?`).run(lastSuccessAt, sourceId)
   }
 
   async touchCleanup(sourceId: SourceID, lastCleanupAt: number) {
@@ -167,7 +173,13 @@ export class SourceStateTable {
   }
 
   async touchError(sourceId: SourceID, lastError: string) {
-    await this.db.prepare(`UPDATE source_state SET last_error = ? WHERE source_id = ?`).run(lastError, sourceId)
+    await this.db.prepare(`
+      UPDATE source_state
+      SET consecutive_failures = consecutive_failures + 1,
+          last_error = ?,
+          refresh_enabled = CASE WHEN consecutive_failures + 1 >= 5 THEN 0 ELSE refresh_enabled END
+      WHERE source_id = ?
+    `).run(lastError, sourceId)
   }
 }
 
@@ -178,6 +190,7 @@ function toSourceState(row: SourceStateRow): SourceState {
     refreshInterval: row.refresh_interval,
     retentionHours: row.retention_hours,
     minKeepCount: row.min_keep_count,
+    consecutiveFailures: row.consecutive_failures ?? 0,
     lastRefreshAt: row.last_refresh_at,
     lastSuccessAt: row.last_success_at,
     lastCleanupAt: row.last_cleanup_at,

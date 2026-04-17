@@ -57,6 +57,7 @@ export async function shouldRefreshSource(sourceId: SourceID, force = false) {
   if (force) return true
   const state = await ensureSourceState(sourceId)
   if (!state.refreshEnabled) return false
-  if (!state.lastSuccessAt) return true
-  return Date.now() - state.lastSuccessAt >= state.refreshInterval
+  const baseline = state.lastRefreshAt ?? state.lastSuccessAt
+  if (!baseline) return true
+  return Date.now() - baseline >= state.refreshInterval
 }
