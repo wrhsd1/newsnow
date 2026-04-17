@@ -68,6 +68,12 @@ PRODUCTHUNT_API_TOKEN=
 DEFAULT_RETENTION_HOURS=48
 DEFAULT_MIN_KEEP_COUNT=100
 DEFAULT_REFRESH_ENABLED=true
+DEFAULT_REFRESH_INTERVAL_MS=600000
+DEFAULT_REALTIME_REFRESH_INTERVAL_MS=120000
+DEFAULT_FAST_REFRESH_INTERVAL_MS=300000
+DEFAULT_COMMON_REFRESH_INTERVAL_MS=1800000
+DEFAULT_SLOW_REFRESH_INTERVAL_MS=3600000
+SCHEDULER_SCAN_INTERVAL_MS=60000
 ```
 
 ### Login and sync
@@ -94,11 +100,29 @@ If these are not set, the app runs in login-disabled mode. Public read endpoints
 ### Background refresh defaults
 
 - `DEFAULT_RETENTION_HOURS=48`
-  - Default retention window for persisted source items.
+  - Default retention window for persisted source items, in hours.
 - `DEFAULT_MIN_KEEP_COUNT=100`
   - Minimum item count kept per source during cleanup.
 - `DEFAULT_REFRESH_ENABLED=true`
   - Enables automatic source refresh by default.
+- `DEFAULT_REFRESH_INTERVAL_MS=600000`
+  - Default refresh interval for sources using the standard cadence, in milliseconds.
+  - Default value: 10 minutes.
+- `DEFAULT_REALTIME_REFRESH_INTERVAL_MS=120000`
+  - Refresh interval override for realtime-class sources, in milliseconds.
+  - Default value: 2 minutes.
+- `DEFAULT_FAST_REFRESH_INTERVAL_MS=300000`
+  - Refresh interval override for fast-class sources, in milliseconds.
+  - Default value: 5 minutes.
+- `DEFAULT_COMMON_REFRESH_INTERVAL_MS=1800000`
+  - Refresh interval override for common-class sources, in milliseconds.
+  - Default value: 30 minutes.
+- `DEFAULT_SLOW_REFRESH_INTERVAL_MS=3600000`
+  - Refresh interval override for slow-class sources, in milliseconds.
+  - Default value: 60 minutes.
+- `SCHEDULER_SCAN_INTERVAL_MS=60000`
+  - How often the background scheduler scans for due sources, in milliseconds.
+  - Default value: 1 minute.
 
 ### Source-specific credentials
 
