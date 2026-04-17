@@ -70,6 +70,12 @@ JWT_SECRET=
 INIT_TABLE=true
 # Whether to enable cache
 ENABLE_CACHE=true
+# Default retention window for persisted source items, in hours
+DEFAULT_RETENTION_HOURS=48
+# Minimum persisted items to keep per source during cleanup
+DEFAULT_MIN_KEEP_COUNT=100
+# Whether background refresh is enabled by default for sources
+DEFAULT_REFRESH_ENABLED=true
 ```
 
 ### Database Support

@@ -65,6 +65,12 @@ JWT_SECRET=
 INIT_TABLE=true
 # 是否启用缓存
 ENABLE_CACHE=true
+# 持久化数据的默认保留时长（小时）
+DEFAULT_RETENTION_HOURS=48
+# 清理时每个数据源至少保留的条目数
+DEFAULT_MIN_KEEP_COUNT=100
+# 数据源默认是否启用后台刷新
+DEFAULT_REFRESH_ENABLED=true
 ```
 
 ### 数据库支持

@@ -1,13 +1,20 @@
-FROM node:20.12.2-alpine AS builder
+FROM node:20-bookworm-slim AS base
 WORKDIR /usr/src
-COPY . .
+ENV PNPM_HOME=/pnpm
+ENV PATH=$PNPM_HOME:$PATH
 RUN corepack enable
-RUN pnpm install
-RUN pnpm run build
 
-FROM node:20.12.2-alpine
+FROM base AS builder
+RUN apt-get update && apt-get install -y --no-install-recommends python3 make g++ && rm -rf /var/lib/apt/lists/*
+COPY package.json pnpm-lock.yaml ./
+COPY patches ./patches
+RUN pnpm install
+COPY . .
+RUN pnpm build
+
+FROM node:20-bookworm-slim AS runtime
 WORKDIR /usr/app
 COPY --from=builder /usr/src/dist/output ./output
 ENV HOST=0.0.0.0 PORT=4444 NODE_ENV=production
-EXPOSE $PORT
+EXPOSE 4444
 CMD ["node", "output/server/index.mjs"]

@@ -15,7 +15,8 @@ export default defineSource(async () => {
   const res: Res = await myFetch(url)
   return res.data.result
     .map((k) => {
-      let url, id
+      let url: string | undefined
+      let id: string | undefined
       if (k.type === 74) {
         url = `https://www.nowcoder.com/feed/main/detail/${k.uuid}`
         id = k.uuid
@@ -23,10 +24,12 @@ export default defineSource(async () => {
         url = `https://www.nowcoder.com/discuss/${k.id}`
         id = k.id
       }
+      if (!id || !url) return undefined
       return {
         id,
         title: k.title,
         url,
       }
     })
+    .filter((item): item is { id: string, title: string, url: string } => !!item)
 })

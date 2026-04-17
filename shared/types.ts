@@ -60,6 +60,9 @@ export interface Source {
    */
   interval: number
   color: Color
+  refreshEnabled?: boolean
+  retentionHours?: number
+  minKeepCount?: number
 
   /**
    * Subtitle 小标题

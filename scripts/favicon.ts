@@ -2,7 +2,6 @@ import fs from "node:fs"
 
 import { fileURLToPath } from "node:url"
 import { join } from "node:path"
-import { Buffer } from "node:buffer"
 import { consola } from "consola"
 import { originSources } from "../shared/pre-sources"
 
@@ -16,7 +15,7 @@ async function downloadImage(url: string, outputPath: string, id: string) {
     }
 
     const image = await (await fetch(url)).arrayBuffer()
-    fs.writeFileSync(outputPath, Buffer.from(image))
+    fs.writeFileSync(outputPath, new Uint8Array(image))
     consola.success(`${id}: downloaded successfully.`)
   } catch (error) {
     consola.error(`${id}: error downloading the image. `, error)

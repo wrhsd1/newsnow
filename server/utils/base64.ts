@@ -1,7 +1,8 @@
 import { Buffer } from "node:buffer"
 
 export function decodeBase64URL(str: string) {
-  return new TextDecoder().decode(Buffer.from(decodeURIComponent(str), "base64"))
+  const bytes = Uint8Array.from(Buffer.from(decodeURIComponent(str), "base64"))
+  return new TextDecoder().decode(bytes)
 }
 
 export function encodeBase64URL(str: string) {
@@ -9,7 +10,8 @@ export function encodeBase64URL(str: string) {
 }
 
 export function decodeBase64(str: string) {
-  return new TextDecoder().decode(Buffer.from(str, "base64"))
+  const bytes = Uint8Array.from(Buffer.from(str, "base64"))
+  return new TextDecoder().decode(bytes)
 }
 
 export function encodeBase64(str: string) {

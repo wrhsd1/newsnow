@@ -45,15 +45,6 @@ export class Cache {
     const res = await this.db.prepare(`SELECT id, data, updated FROM cache WHERE ${keysStr}`).all() as any
     const rows = (res.results ?? res) as CacheRow[]
 
-    /**
-     * https://developers.cloudflare.com/d1/build-with-d1/d1-client-api/#return-object
-     * cloudflare d1 .all() will return
-     * {
-     *   success: boolean
-     *   meta:
-     *   results:
-     * }
-     */
     if (rows?.length) {
       logger.success(`get entire (...) cache`)
       return rows.map(row => ({
@@ -74,7 +65,6 @@ export class Cache {
 export async function getCacheTable() {
   try {
     const db = useDatabase()
-    // logger.info("db: ", db.getInstance())
     if (process.env.ENABLE_CACHE === "false") return
     const cacheTable = new Cache(db)
     if (process.env.INIT_TABLE !== "false") await cacheTable.init()

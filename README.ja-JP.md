@@ -63,6 +63,12 @@ JWT_SECRET=
 INIT_TABLE=true
 # キャッシュを有効にするかどうか
 ENABLE_CACHE=true
+# 永続化されたソース項目のデフォルト保持時間（時間）
+DEFAULT_RETENTION_HOURS=48
+# クリーンアップ時にソースごとに最低限保持する件数
+DEFAULT_MIN_KEEP_COUNT=100
+# ソースのバックグラウンド更新をデフォルトで有効にするかどうか
+DEFAULT_REFRESH_ENABLED=true
 ```
 
 ### データベースサポート

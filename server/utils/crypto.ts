@@ -1,8 +1,7 @@
 import _md5 from "md5"
 import { subtle as _ } from "uncrypto"
 
-type T = typeof crypto.subtle
-const subtle: T = _
+const subtle = _
 
 export async function md5(s: string) {
   try {

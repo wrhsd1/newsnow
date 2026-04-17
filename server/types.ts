@@ -1,5 +1,40 @@
 import type { NewsItem, SourceID } from "@shared/types"
 
+export interface SourceConfigValue {
+  refreshEnabled: boolean
+  refreshInterval: number
+  retentionHours: number
+  minKeepCount: number
+}
+
+export interface SourceState extends SourceConfigValue {
+  sourceId: SourceID
+  lastRefreshAt?: number
+  lastSuccessAt?: number
+  lastCleanupAt?: number
+  lastError?: string
+}
+
+export interface SourceStateRow {
+  source_id: SourceID
+  refresh_enabled: number
+  refresh_interval: number
+  retention_hours: number
+  min_keep_count: number
+  last_refresh_at?: number
+  last_success_at?: number
+  last_cleanup_at?: number
+  last_error?: string
+}
+
+export interface PersistedSourceItem {
+  sourceId: SourceID
+  itemId: string
+  sortTime: number
+  fetchedAt: number
+  item: NewsItem
+}
+
 export interface RSSInfo {
   title: string
   description: string
@@ -52,14 +87,11 @@ export interface UserInfo {
 }
 
 export interface RSSHubOption {
-  // default: true
   sorted?: boolean
-  // default: 20
   limit?: number
 }
 
 export interface SourceOption {
-  // default: false
   hiddenDate?: boolean
 }
 

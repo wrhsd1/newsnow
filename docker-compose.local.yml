@@ -2,15 +2,15 @@ services:
   newsnow:
     build: .
     ports:
-      - '4444:4444'
+      - '33654:4444'
     volumes:
       - newsnow_data:/usr/app/.data
+    env_file:
+      - .env.server
     environment:
-      - G_CLIENT_ID=
-      - G_CLIENT_SECRET=
-      - JWT_SECRET=
-      - INIT_TABLE=true
-      - ENABLE_CACHE=true
+      - HOST=0.0.0.0
+      - PORT=4444
+      - NODE_ENV=production
 
 volumes:
   newsnow_data:

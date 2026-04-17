@@ -4,7 +4,6 @@ import { AnimatePresence, motion, useInView } from "framer-motion"
 import { useWindowSize } from "react-use"
 import { forwardRef, useImperativeHandle } from "react"
 import { OverlayScrollbar } from "../common/overlay-scrollbar"
-import { safeParseString } from "~/utils"
 
 export interface ItemsProps extends React.HTMLAttributes<HTMLDivElement> {
   id: SourceID
@@ -59,9 +58,7 @@ function NewsCard({ id, setHandleRef }: NewsCardProps) {
       let url = `/s?id=${id}`
       const headers: Record<string, any> = {}
       if (refetchSources.has(id)) {
-        url = `/s?id=${id}&latest`
-        const jwt = safeParseString(localStorage.getItem("jwt"))
-        if (jwt) headers.Authorization = `Bearer ${jwt}`
+        url = `/s?id=${id}&refresh=1`
         refetchSources.delete(id)
       } else if (cacheSources.has(id)) {
         // wait animation

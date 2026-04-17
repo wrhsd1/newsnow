@@ -23,7 +23,7 @@ const nitroOption: Parameters<typeof viteNitro>[0] = {
     },
   },
   imports: {
-    dirs: ["server/utils", "shared"],
+    dirs: ["server/utils", "server/services", "shared"],
   },
   preset: "node-server",
   alias: {
